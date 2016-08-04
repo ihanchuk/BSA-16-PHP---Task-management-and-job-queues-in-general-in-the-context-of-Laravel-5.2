@@ -7,6 +7,7 @@ use Illuminate\Queue\SerializesModels;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use App\Models\Books\Book;
+use App\User;
 
 class SendNewBookEmail extends Job implements ShouldQueue
 {
@@ -31,11 +32,14 @@ class SendNewBookEmail extends Job implements ShouldQueue
      */
     public function handle()
     {
+        $users = \App\User::select(['email','first_name'])->get()->toArray();
 
-        \Mail::send('emails.NewBookEmail',["book"=>$this->BookModel], function ($mailer){
-            $mailer->from('hello@app.com', 'Your Application');
-            $mailer->to("mfc2005@ukr.net", "Andrey Smith")->subject('Your Reminder!');
-        });
+        foreach ($users as $user){
+            \Mail::later(1,'emails.NewBookEmail',["book"=>$this->BookModel], function ($mailer) use($user){
+                $mailer->from('reminder@library.com', 'Librarian');
+                $mailer->to($user["email"], $user["first_name"])->subject('New book in library');
+            });
+        }
 
     }
 }
