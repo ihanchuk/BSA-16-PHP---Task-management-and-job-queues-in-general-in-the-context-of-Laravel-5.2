@@ -27,4 +27,15 @@ class User extends Authenticatable
     public function books(){
         return $this->hasMany('App\Models\Books\Book','book_user_id','id');
     }
+
+    public function ownsBook($id){
+
+        foreach ($this->books->toArray() as $book){
+            if ($book["id"] == $id) {
+                return true;
+            }
+        }
+
+        return false;
+    }
 }
