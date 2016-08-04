@@ -6,19 +6,22 @@ use App\Jobs\Job;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Contracts\Queue\ShouldQueue;
+use App\Models\Books\Book;
 
 class SendNewBookEmail extends Job implements ShouldQueue
 {
     use InteractsWithQueue, SerializesModels;
+    protected $BookModel;
 
     /**
      * Create a new job instance.
      *
+     * @param  Book  $book
      * @return void
      */
-    public function __construct()
+    public function __construct(Book $book)
     {
-
+        $this->BookModel = $book;
     }
 
     /**
@@ -26,10 +29,13 @@ class SendNewBookEmail extends Job implements ShouldQueue
      *
      * @return void
      */
-    public function handle(Mailer $mailer)
+    public function handle()
     {
-        Mail::later(5, 'emails.NewBookEmail', ["name"=>"John Doe"], function ($message) {
-            $message->to("mfc2005@ukr.net","john Smith")->subject("welcome");
+
+        \Mail::send('emails.NewBookEmail',["book"=>$this->BookModel], function ($mailer){
+            $mailer->from('hello@app.com', 'Your Application');
+            $mailer->to("mfc2005@ukr.net", "Andrey Smith")->subject('Your Reminder!');
         });
+
     }
 }

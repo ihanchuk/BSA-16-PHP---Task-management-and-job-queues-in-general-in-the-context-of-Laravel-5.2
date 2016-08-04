@@ -4,8 +4,9 @@ namespace App\Http\Controllers;
 
 use App\Models\Books\Book;
 use App\User;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
-
+use App\Jobs\SendNewBookEmail as SendBook;
 use App\Http\Requests;
 
 class BooksController extends Controller
@@ -53,9 +54,11 @@ class BooksController extends Controller
             'title'     => 'required',
         ]);
 
-        Book::create($request->all());
+        $book = Book::create($request->all());
 
-        
+        $job = (new SendBook($book))->delay(5);
+        $this->dispatch($job);
+
         return redirect()->action('BooksController@index')->with('dialog', 'New book is created');
     }
 
